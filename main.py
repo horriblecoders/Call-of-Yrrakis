@@ -52,27 +52,30 @@ class Weapon:
 			print(target.name, "is dead!")
 
 # Define weapons and entities
-Kalash = Weapon("kalash", 5)
-SlugPistol = Weapon("slug pistol", 3)
-RoadWarrior = Entity("road warrior", 10, [SlugPistol, Kalash])
-Opponent = Entity("road warrior's opponent", 10, [SlugPistol])
+def main():
+    Kalash = Weapon("kalash", 5)
+    SlugPistol = Weapon("slug pistol", 3)
+    RoadWarrior = Entity("road warrior", 10, [SlugPistol, Kalash])
+    Opponent = Entity("road warrior's opponent", 10, [SlugPistol])
 
-RoadWarrior.opponents = [Opponent]
-Opponent.opponents = [RoadWarrior]
+    RoadWarrior.opponents = [Opponent]
+    Opponent.opponents = [RoadWarrior]
 
-for i in range(5):
-	print("Begin turn", i + 1)
-	RoadWarrior.update()
-	Opponent.update()
-	print("End turn", i + 1)
-	
-	if RoadWarrior.health <= 0 or Opponent.health <= 0:
-		break
-		
-	
-if RoadWarrior.health <= 0:
-	print(Opponent.name, "is victorious!")
-elif Opponent.health <= 0:
-	print(RoadWarrior.name, "is victorious!")
-elif RoadWarrior.health > 0 and RoadWarrior.health > 0:
-	print("Nobody won!")
+    for i in range(5):
+        print("Begin turn", i + 1)
+        RoadWarrior.update()
+        Opponent.update()
+        print("End turn", i + 1)
+        
+        if RoadWarrior.health <= 0 or Opponent.health <= 0:
+            break
+        
+    if RoadWarrior.health <= 0:
+        print(Opponent.name, "is victorious!")
+    elif Opponent.health <= 0:
+        print(RoadWarrior.name, "is victorious!")
+    elif RoadWarrior.health > 0 and RoadWarrior.health > 0:
+        print("Nobody won!")
+        
+if __name__ == '__main__':
+    main()
