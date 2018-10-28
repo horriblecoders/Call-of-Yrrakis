@@ -2,20 +2,20 @@ import random
 import colorama
 
 class Unit:
-	def __init__(self, entities, units=None):
+	def __init__(self, entities, subunits=None):
 		if entities is None:
 			self.entities = []
 		else:
 			self.entities = entities
 			
-		if units is None:
-			self.units = []
+		if subunits is None:
+			self.subunits = []
 		else:
-			self.units = units
+			self.subunits = units
 
 # Parent class for all entities
 class Entity:
-	def __init__(self, name, health, weapons, armor=None):
+	def __init__(self, name, health, weapons):
 		self.name = name
 		self.health = health
 		
@@ -23,11 +23,6 @@ class Entity:
 			self.weapons = []
 		else:
 			self.weapons = weapons
-		
-		if armor is None:
-			self.armor = []
-		else:
-			self.armor = armor
 			
 	def update(self):
 		if self.health <= 0:
