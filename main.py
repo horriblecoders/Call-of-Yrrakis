@@ -51,16 +51,18 @@ class Weapon:
 		if target.health <= 0:
 			print(target.name, "is dead!")
 
-# Define weapons and entities
 def main():
+    # Define weapons and entities
     Kalash = Weapon("kalash", 5)
     SlugPistol = Weapon("slug pistol", 3)
     RoadWarrior = Entity("road warrior", 10, [SlugPistol, Kalash])
     Opponent = Entity("road warrior's opponent", 10, [SlugPistol])
-
+    
+    # Define opponents
     RoadWarrior.opponents = [Opponent]
     Opponent.opponents = [RoadWarrior]
-
+    
+    # Run scenario
     for i in range(5):
         print("Begin turn", i + 1)
         RoadWarrior.update()
