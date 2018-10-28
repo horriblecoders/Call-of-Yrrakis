@@ -48,8 +48,8 @@ class Weapon:
 
 def main():
     # Define weapons and entities
-    Kalash = Weapon("kalash", 5)
-    SlugPistol = Weapon("slug pistol", 3)
+    Kalash = Weapon("kalash", 8)
+    SlugPistol = Weapon("slug pistol", 5)
     RoadWarrior = Entity("road warrior", 10, [SlugPistol, Kalash])
     Opponent = Entity("road warrior's opponent", 10, [SlugPistol])
     
