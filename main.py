@@ -1,78 +1,79 @@
 import random
-import colorama
 
-class Unit:
-	def __init__(self, entities, subunits=None):
-		if entities is None:
-			self.entities = []
-		else:
-			self.entities = entities
-			
-		if subunits is None:
-			self.subunits = []
-		else:
-			self.subunits = units
+#Class for all player and hostile characters
+class Character:
+    def __init__(self, name):
+        self.name = name
+        self.health = 10
 
-# Parent class for all entities
-class Entity:
-	def __init__(self, name, health, weapons):
-		self.name = name
-		self.health = health
-		
-		if weapons is None:
-			self.weapons = []
-		else:
-			self.weapons = weapons
-			
-	def update(self):
-		if self.health <= 0:
-			pass
-		else:
-			weapon_number = random.randint(0, len(self.weapons)-1)
-			target = random.randint(0, len(self.opponents)-1)
-			print(self.name, "fires his", self.weapons[weapon_number].name, "at", self.opponents[target].name + "!")
-			self.weapons[weapon_number].fire(self.opponents[target])
+        Fists = Weapon('Fists', '1')
+        self.weapon = Fists
 
-# Parent class for all (ranged) weapons
+    def fight(self):
+        #Choose an enemy
+        enemy = random.choice(self.opponents)
+
+        #Hit enemy
+        if self.health > 0:
+            self.weapon.use(enemy)
+        if enemy.health <= 0:
+            print(self.name,'killed',enemy.name)
+            self.opponents.remove(enemy)
+
+#Class for all weapons
 class Weapon:
-	def __init__(self, name, damage):
-		self.name = name
-		self.damage = damage
-		
-	def fire(self, target):
-		rolled_damage = random.randint(int(self.damage / 2), self.damage)
-		target.health -= rolled_damage
-		print(target.name, "is dealt", rolled_damage, "point(s) of damage and has", target.health, "point(s) left.")
-		if target.health <= 0:
-			print(target.name, "is dead!")
+    def __init__(self,name,damage='1d4'):
+        self.name = name
+        self.damage = damage
 
-def main():
-    # Define weapons and entities
-    Kalash = Weapon("kalash", 8)
-    SlugPistol = Weapon("slug pistol", 5)
-    RoadWarrior = Entity("road warrior", 10, [SlugPistol, Kalash])
-    Opponent = Entity("road warrior's opponent", 10, [SlugPistol])
-    
-    # Define opponents
-    RoadWarrior.opponents = [Opponent]
-    Opponent.opponents = [RoadWarrior]
-    
-    # Run scenario
-    for i in range(5):
-        print("Begin turn", i + 1)
-        RoadWarrior.update()
-        Opponent.update()
-        print("End turn", i + 1)
+    def use(self,target):
+        rolled_damage = roll(self.damage)
+        target.health -= rolled_damage
+        print(target.name,'is dealt',rolled_damage,'and has',max(target.health,0),'hitpoints remaining!')
+
+#Used to roll dice to calculate damage and other random events
+def roll(dice_str):
+    if dice_str.isdigit():
+        return int(dice_str)
+    dice_num = int(dice_str[:dice_str.find('d')])
+    dice_sides = int(dice_str[dice_str.find('d')+1:])
+    output = 0
+    for die in range(dice_num):
+        output += random.randint(1,dice_sides)
+    return output
+
+#Used to battle two teams of characters
+def battle(team1,team2):
+    turn = 1
+    while any(team_member.health > 0 for team_member in team1) > 0 and any(enemy.health > 0 for enemy in team2):
+        print('Starting turn',turn)
+        for team_member in team1:
+            team_member.fight()
+        for enemy in team2:
+            enemy.fight()
+        print('Ending turn',turn)
+        turn += 1
         
-        if RoadWarrior.health <= 0 or Opponent.health <= 0:
-            break
-        
-    if RoadWarrior.health <= 0:
-        print(Opponent.name, "is victorious!")
-    elif Opponent.health <= 0:
-        print(RoadWarrior.name, "is victorious!")
-    elif RoadWarrior.health > 0 and RoadWarrior.health > 0:
-        print("Nobody won!")
-        
-if __name__ == '__main__':
-    main()
+#Create Weapons
+Sword = Weapon('Sword','1d6')
+
+#Create Characters
+Player = Character('Player')
+Enemy = Character('Enemy')
+Enemy2 = Character('Enemy2')
+
+#Give weapon to character
+Player.weapon = Sword
+
+#Set up teams
+team1 = [Player]
+team2 = [Enemy,Enemy2]
+
+#Update teams with enemies
+for team_member in team1:
+    team_member.opponents = team2
+for team_member in team2:
+    team_member.opponents = team1
+
+#Battle
+battle(team1,team2)
