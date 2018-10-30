@@ -29,9 +29,6 @@ class Character:
             self.opponents.remove(enemy)
 
 
-
-
-
 #Class for all weapons
 class Weapon:
     def __init__(self,name,damage='1d4',value=0):
@@ -84,83 +81,90 @@ class Store:
         Lobster = Food('Lobster',14,30)
         self.food += Bread,Lobster
 
+    def replace_item(self, item, field, append=False):
+        if not append:
+            if getattr(self.customer,field).value//2 + self.customer.money >= item.value:
+                print("Are you sure you want to replace your",getattr(self.customer,field).name,'with',item.name + '?')
+                x = input()
+                if x == 'y' or x == 'yes':
+                    self.customer.money += getattr(self.customer,field).value//2
+                    self.customer.money -= item.value
+                    setattr(self.customer, field, item)
+                    print("Bought", item.name + '!')
+            else:
+                print("You don't have enough gold!")
+        else:
+            if self.customer.money >= item.value:
+                self.customer.money -= item.value
+                getattr(self.customer, field).append(item)
+                print("Bought", item.name + '!')
+            else:
+                print("You don't have enough gold!")
+
+    def buy(self):
+        print('{:20}'.format('Weapon Name'), '{:>7}'.format('Damage'), '{:>10}'.format('Cost'))
+        for weapon in self.weapons:
+            print('{:20}'.format(weapon.name), '{:>7}'.format(weapon.damage), '{:>10}'.format(weapon.value))
+        print('{:20}'.format('Armor Type'), '{:>7}'.format('Armor'), '{:>10}'.format('Cost'))
+        for armor in self.armor:
+            print('{:20}'.format(armor.name), '{:>7}'.format(armor.bonus), '{:>10}'.format(armor.value))
+        print('{:20}'.format('Food Type'), '{:>7}'.format('HP Gain'), '{:>10}'.format('Cost'))
+        for food in self.food:
+            print('{:20}'.format(food.name), '{:>7}'.format(food.healing), '{:>10}'.format(food.value))
+
+    def view_inv(self):
+        print('{:20}'.format('Weapon Name'), '{:>7}'.format('Damage'), '{:>10}'.format('Trade-in'))
+        print('{:20}'.format(self.customer.weapon.name), '{:>7}'.format(self.customer.weapon.damage),
+              '{:>10}'.format(self.customer.weapon.value // 2))
+        if self.customer.armor.name != 'None':
+            print('{:20}'.format('Armor Type'), '{:>7}'.format('Armor'), '{:>10}'.format('Trade-in'))
+            print('{:20}'.format(self.customer.armor.name), '{:>7}'.format(self.customer.armor.bonus),
+                  '{:>10}'.format(self.customer.armor.value // 2))
+        if self.customer.food != []:
+            print('{:20}'.format('Food Type'), '{:>7}'.format('HP Gain'), '{:>10}'.format('Value'))
+            for food in self.customer.food:
+                print('{:20}'.format(food.name), '{:>7}'.format(food.healing),
+                      '{:>10}'.format(food.value // 2))
+
+    def view_gold(self):
+        print("You have", self.customer.money, 'gold.')
+
     def shop(self):
         shopping = True
+
         while shopping:
+
             command = input("Do you want to buy, view inventory, or leave?")
 
             # List items available to buy
             if command.lower() == 'b' or command.lower() == 'buy':
-                print('{:20}'.format('Weapon Name'), '{:>7}'.format('Damage'), '{:>10}'.format('Cost'))
-                for weapon in self.weapons:
-                    print('{:20}'.format(weapon.name), '{:>7}'.format(weapon.damage), '{:>10}'.format(weapon.value))
-                print('{:20}'.format('Armor Type'), '{:>7}'.format('Armor'), '{:>10}'.format('Cost'))
-                for armor in self.armor:
-                    print('{:20}'.format(armor.name), '{:>7}'.format(armor.bonus), '{:>10}'.format(armor.value))
-                print('{:20}'.format('Food Type'), '{:>7}'.format('HP Gain'), '{:>10}'.format('Cost'))
-                for food in self.food:
-                    print('{:20}'.format(food.name), '{:>7}'.format(food.healing), '{:>10}'.format(food.value))
+                self.buy()
 
-            # List items available to sell
+            #View inventory
             elif command.lower() == 'v' or command.lower() == 'view' or command.lower() == 'view inventory':
-                print('{:20}'.format('Weapon Name'), '{:>7}'.format('Damage'), '{:>10}'.format('Trade-in'))
-                print('{:20}'.format(self.customer.weapon.name), '{:>7}'.format(self.customer.weapon.damage),
-                      '{:>10}'.format(self.customer.weapon.value // 2))
-                if self.customer.armor.name != 'None':
-                    print('{:20}'.format('Armor Type'), '{:>7}'.format('Armor'), '{:>10}'.format('Trade-in'))
-                    print('{:20}'.format(self.customer.armor.name), '{:>7}'.format(self.customer.armor.bonus),
-                          '{:>10}'.format(self.customer.armor.value // 2))
-                if self.customer.food != []:
-                    print('{:20}'.format('Food Type'), '{:>7}'.format('HP Gain'), '{:>10}'.format('Value'))
-                    for food in self.customer.food:
-                        print('{:20}'.format(food.name), '{:>7}'.format(food.healing),
-                              '{:>10}'.format(food.value // 2))
+                self.view_inv()
+
+            #Leave the shop
             elif command.lower() == 'l' or command.lower() == 'leave':
                 shopping = False
+
+            #Show the players gold
             elif command.lower() == 'bal' or command.lower() == 'balance':
-                print("You have", self.customer.money, 'gold.')
+                self.view_gold()
+
+            #Handle buy commands
             else:
                 command = command.split(' ', 1)
                 if command[0].lower() == 'b' or command[0].lower() == 'buy':
                     for weapon in self.weapons:
                         if weapon.name.lower() == command[1].lower():
-                            if weapon.value <= self.customer.money + self.customer.weapon.value // 2:
-                                print("Are you sure you want to replace your", self.customer.weapon.name, 'with',
-                                      weapon.name)
-                                x = input()
-                                if x == 'y' or x == 'yes':
-                                    self.customer.money += self.customer.weapon.value // 2
-                                    self.customer.money -= weapon.value
-                                    self.customer.weapon = weapon
-                                    print("You bought", self.customer.weapon.name + '!')
-                                    break
-                            else:
-                                print("You do not have enough money to buy that.")
-                                break
+                            self.replace_item(weapon, "weapon")
                     for armor in self.armor:
                         if armor.name.lower() == command[1].lower():
-                            if armor.value <= self.customer.money + self.customer.armor.value // 2:
-                                print("Are you sure you want to replace your", self.customer.armor.name, 'with',
-                                      armor.name)
-                                x = input()
-                                if x == 'y' or x == 'yes':
-                                    self.customer.money += self.customer.armor.value // 2
-                                    self.customer.money -= armor.value
-                                    self.customer.armor = armor
-                                    print("You bought", self.customer.armor.name + '!')
-                                    break
-                            else:
-                                print("You do not have enough money to buy that.")
+                            self.replace_item(armor, "armor")
                     for food in self.food:
                         if food.name.lower() == command[1].lower():
-                            if food.value <= self.customer.money:
-                                self.customer.money -= food.value
-                                self.customer.food.append(food)
-                                print("You bought", food.name + '!')
-                                break
-                            else:
-                                print("You do not have enough money to buy that.")
-
+                            self.replace_item(food, "food", append=True)
 
 
 #Used to roll dice to calculate damage and other random events
@@ -213,7 +217,6 @@ for team_member in team2:
 
 #Battle
 battle(team1,team2)
-
 
 #Give the player some money to test the shop with
 Player.money = 5000
