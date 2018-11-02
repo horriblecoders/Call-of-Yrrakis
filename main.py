@@ -1,4 +1,5 @@
 import random
+import time
 
 #Class for all player and hostile characters
 class Character:
@@ -11,23 +12,38 @@ class Character:
         self.weapon = Fists
         self.armor = No_Armor
         self.food = []
-        self.health = 10 + self.armor.bonus
+        self.base_health = 10
+        self.health = self.base_health + self.armor.bonus
         self.money = 0
 
+    def give_money(self,amount):
+        self.money += amount
 
     def fight(self):
         #Choose an enemy
-        enemy = random.choice(self.opponents)
+        try:
+            enemy = random.choice(self.opponents)
 
-        #Hit enemy
-        if self.health > 0:
-            self.weapon.use(enemy)
-        if enemy.health <= 0:
-            print(self.name,'killed',enemy.name,'and looted',enemy.money,'gold!')
-            self.money += enemy.money
-            enemy.money = 0
-            self.opponents.remove(enemy)
+            #Hit enemy
+            if self.health > 0:
+                self.weapon.use(enemy)
+            if enemy.health <= 0:
+                print(self.name,'killed',enemy.name,'and looted',enemy.money,'gold!')
+                self.money += enemy.money
+                enemy.money = 0
+                self.opponents.remove(enemy)
+        except:
+            #Something died and there are no enemies to choose from
+            pass
 
+    def heal(self,amount= -1):
+        if amount == -1:
+            self.health = self.base_health + self.armor.bonus
+            print(self.name,'Fully Healed!')
+        else:
+            self.health += amount
+            if self.health > self.base_health + self.armor.bonus:
+                self.health = self.base_health + self.armor.bonus
 
 #Class for all weapons
 class Weapon:
@@ -181,6 +197,10 @@ def roll(dice_str):
 #Used to battle two teams of characters
 def battle(team1,team2):
     turn = 1
+    for team_member in team1:
+        team_member.opponents = team2
+    for team_member in team2:
+        team_member.opponents = team1
     while any(team_member.health > 0 for team_member in team1) > 0 and any(enemy.health > 0 for enemy in team2):
         print('Starting turn',turn)
         for team_member in team1:
@@ -190,38 +210,84 @@ def battle(team1,team2):
         print('Ending turn',turn)
         turn += 1
 
-#Create Weapons
-Sword = Weapon('Sword','1d6',50)
+#Handle character creation and loading saved characters
+def set_up_player():
+    file = False
+    #File IO goes here
+    if not file:
+        print("No save file found.")
+        pname = input("Name your character:")
+        Player = Character(pname)
+        Player.give_money(10)
+        return Player
 
-#Create Characters
-Player = Character('Player')
-Enemy = Character('Enemy')
-Enemy2 = Character('Enemy2')
+#I should probably make arena a class
+class Arena:
+    def __init__(self):
+        self.round = 1
 
-#Give weapon to character
-Player.weapon = Sword
+    def round1(self):
+        Bat = Character('Bat')
+        Bat2 = Character('Bat')
+        Claws = Weapon('Claws', '1d2')
+        Bat.weapon = Claws
+        Bat2.weapon = Claws
+        enemies = [Bat,Bat2]
+        battle([self.player],enemies)
+        if self.player.health > 0:
+            print("You beat the first round of the arena and earned 100 gold!")
+            self.player.give_money(100)
+            self.round += 1
+    def round2(self):
+        print('Round 2 of arena is not yet implemented.')
+    def round3(self):
+        pass
+    def boss_fight(self):
+        pass
 
-#Give bad guys some money
-Enemy.money = random.randrange(100)
-Enemy2.money = random.randrange(100)
+    def fight(self):
+        if self.round == 1:
+            self.round1()
+        elif self.round == 2:
+            self.round2()
+        elif self.round == 3:
+            self.round3()
+        elif self.round == 4:
+            self.boss_fight()
 
-#Set up teams
-team1 = [Player]
-team2 = [Enemy,Enemy2]
+def main():
+    Player = set_up_player()
+    General_Store = Store()
+    Fight_Arena = Arena()
+    Fight_Arena.player = Player
+    General_Store.customer = Player
 
-#Update teams with enemies
-for team_member in team1:
-    team_member.opponents = team2
-for team_member in team2:
-    team_member.opponents = team1
+    playing = True
+    while playing:
+        var = input("What do you want to do? (Arena,Shop,Work,Inn,Quit)")
+        if var.lower() == 'arena' or var.lower() == 'a':
+            Fight_Arena.fight()
+        elif var.lower() == 'shop' or var.lower() == 's':
+            General_Store.shop()
+        elif var.lower() == 'inn' or var.lower() == 'i':
+            print('You travel to the inn and rest...')
+            time.sleep(1)
+            Player.heal()
+        elif var.lower() == 'work' or var.lower() == 'w':
+            jobs = ['Woodcutting','Mining']
+            work_time = input("How many minutes would you like to work? (10gp per minute)")
+            work_time = int(work_time) * 60
+            job = random.choice(jobs)
+            print('You go',job)
+            print('Working...')
+            time.sleep(work_time)
+            Player.give_money(int(work_time/60*10))
+            print('Worked',int(work_time/60),'minutes and gained',int(work_time/60*10),'gold!')
 
-#Battle
-battle(team1,team2)
+        elif var.lower() == 'quit' or var.lower() == 'q':
+            playing = False
+    #save game
 
-#Give the player some money to test the shop with
-Player.money = 5000
 
-#After the battle go shopping
-General_Store = Store()
-General_Store.customer = Player
-General_Store.shop()
+if __name__ == '__main__':
+    main()
